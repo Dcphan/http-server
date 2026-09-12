@@ -30,8 +30,21 @@ int main()
         die("Connect");
     }
 
-    const char* message = "Hello, Server";
-    send(clientSocket, message, strlen(message), 0);
+    const char* response =
+        "HTTP/1.1 200 OK\r\n"
+        "Content-Length: 12\r\n"
+        "\r\n"
+        "Hello World!";
+
+    char buffer[10000];
+
+    for (int i = 0; i < 10000; i++) {
+        buffer[i] = 'A';
+    }
+    
+    send(clientSocket, buffer, strlen(buffer), 0);
+
+    // send(clientSocket, response, strlen(response), 0);
 
     close(clientSocket);
 

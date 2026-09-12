@@ -45,4 +45,5 @@ int Socket::accept(){
 
  Socket::~Socket(){
     close(fd);
+    printf("Socket Close\n");
 }
