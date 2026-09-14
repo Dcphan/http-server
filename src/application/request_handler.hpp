@@ -4,5 +4,5 @@
 class RequestHandler{
     
     public:
-        HttpResponse handler(const HttpRequest& request);
+        static HttpResponse handler(const HttpRequest& request);
 };

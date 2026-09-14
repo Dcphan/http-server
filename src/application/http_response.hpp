@@ -16,4 +16,6 @@ struct HttpResponse {
     // Headers
     std::string contentType;
     std::string body;
+
+    static std::string toHttpMessage(HttpResponse response);
 };

@@ -4,7 +4,7 @@
 #include <sys/socket.h>
 #include <atomic>
 #include <csignal>
-#include "application/http_request.hpp"
+#include "application/request_handler.hpp"
 
 const int MAX_CONNECTION = 5;
 const int BUFFER_SIZE = 1024;
@@ -28,10 +28,12 @@ void handleClient(int clientSocket)
         buffer[bytesReceived] = '\0';
 
         HttpRequest request = HttpRequest::parse(buffer);
-       
-        printf("Method: %s\n", request.method.c_str());
-        printf("Path: %s\n", request.path.c_str());
-        printf("Version: %s\n", request.version.c_str());
+        HttpResponse response = RequestHandler::handler(request);
+        std::string httpResp = HttpResponse::toHttpMessage(response);
+
+        printf("Respond message: %s\n", httpResp.c_str());
+
+        send(clientSocket, httpResp.data(), httpResp.size(), 0);
     }
     close(clientSocket);
 }
