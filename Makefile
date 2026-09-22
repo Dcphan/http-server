@@ -1,44 +1,30 @@
-# Compiler
 CXX = g++
 CXXFLAGS = -std=c++17 -Wall -Wextra -I./src
 
-# Directories
-SRC_DIR = src
-APP_DIR = $(SRC_DIR)/application
-NET_DIR = $(SRC_DIR)/networking
-BUILD_DIR = build
-
-# Target
 TARGET = server
 
-# Source files
-SRCS = \
-	$(SRC_DIR)/main.cpp \
-	$(APP_DIR)/http_request.cpp \
-	$(APP_DIR)/http_response.cpp \
-	$(APP_DIR)/request_handler.cpp \
-	$(NET_DIR)/socket.cpp
+SRC = \
+	main.cpp \
+	src/HttpServer.cpp \
+	src/networking/socket.cpp \
+	src/application/http_request.cpp \
+	src/application/http_response.cpp \
+	src/application/router.cpp
 
-# Object files
-OBJS = $(SRCS:$(SRC_DIR)/%.cpp=$(BUILD_DIR)/%.o)
+OBJ = $(SRC:.cpp=.o)
 
-# Default target
 all: $(TARGET)
 
-# Link
-$(TARGET): $(OBJS)
-	$(CXX) $(CXXFLAGS) -o $@ $^
+$(TARGET): $(OBJ)
+	$(CXX) $(CXXFLAGS) -o $@ $(OBJ)
 
-# Compile
-$(BUILD_DIR)/%.o: $(SRC_DIR)/%.cpp
-	@mkdir -p $(dir $@)
+%.o: %.cpp
 	$(CXX) $(CXXFLAGS) -c $< -o $@
 
-# Clean
 clean:
-	rm -rf $(BUILD_DIR) $(TARGET)
+	rm -f $(OBJ) $(TARGET)
 
-# Rebuild
-re: clean all
+run: $(TARGET)
+	./$(TARGET)
 
-.PHONY: all clean re
+.PHONY: all clean run

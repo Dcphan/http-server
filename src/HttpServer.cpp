@@ -1,16 +1,20 @@
-#include "networking/socket.hpp"
 #include <cstdio>
 #include <unistd.h>
 #include <sys/socket.h>
 #include <atomic>
 #include <csignal>
-#include "application/request_handler.hpp"
+#include "HttpServer.hpp"
+#include "application/http_response.hpp"
+#include "application/router.hpp"
 
 const int MAX_CONNECTION = 5;
 const int BUFFER_SIZE = 1024;
 
+HttpServer::HttpServer(){
+    this->router = new Router();
+}
 
-void handleClient(int clientSocket)
+void handleClient(int clientSocket, Router& router)
 {
     char buffer[BUFFER_SIZE];
 
@@ -28,7 +32,11 @@ void handleClient(int clientSocket)
         buffer[bytesReceived] = '\0';
 
         HttpRequest request = HttpRequest::parse(buffer);
-        HttpResponse response = RequestHandler::handler(request);
+        Handler httpHandler = router.find(request.method, request.path); 
+        if (httpHandler == nullptr){
+            // return error
+        }
+        HttpResponse response = httpHandler(request);
         std::string httpResp = HttpResponse::toHttpMessage(response);
 
         printf("Respond message: %s\n", httpResp.c_str());
@@ -38,7 +46,7 @@ void handleClient(int clientSocket)
     close(clientSocket);
 }
 
-int main(){
+void HttpServer::run(int port){
     Socket server;
 
     server.bind(8080);
@@ -55,8 +63,24 @@ int main(){
         // HANDLE CLIENT HERE
         char buffer[1024] = { 0 };
 
-        handleClient(clientSocket);  
+        handleClient(clientSocket, *router);  
     }
-
-    return 0;
 }
+
+
+void HttpServer::GET(const std::string& path, Handler func){
+    router->GET(path, func);
+}
+
+void HttpServer::POST(const std::string& path, Handler func){
+    router->POST(path, func); 
+}
+
+void HttpServer::PUT(const std::string& path, Handler func){
+    router->PUT(path, func);
+}
+
+void HttpServer::DELETE(const std::string& path, Handler func){
+    router->DELETE(path, func);
+}
+
