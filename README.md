@@ -7,35 +7,27 @@ The framework follows a design similar to Go's `net/http`, where routes are regi
 ---
 
 ## Architecture
+``` mermaid
+flowchart TD
+    C["Client"]
+    E["Event Loop Thread<br/>epoll_wait / accept / recv / send"]
+    CS["Connection State<br/>Input and Output Buffers"]
+    Q["Thread-Safe Task Queue"]
+    WA["Worker A"]
+    WB["Worker B"]
+    R["Completed Response Queue"]
+    N["eventfd Notification"]
 
-```text
-                           Client
-                              │
-                              │ HTTP Request
-                              ▼
-┌──────────────────────────────────────────────────────────────────┐
-│                          HTTP Server                             │
-│                                                                  │
-│   TCP Connection                                                 │
-│        │                                                         │
-│        ▼                                                         │
-│   HTTP Parser                                                    │
-│        │                                                         │
-│        ▼                                                         │
-│   Router                                                         │
-│        │                                                         │
-│        ▼                                                         │
-│   Handler Function                                               │
-│        │                                                         │
-│        ▼                                                         │
-│   Response Writer                                                │
-└──────────────────────────────────────────────────────────────────┘
-                              │
-                              │ HTTP Response
-                              ▼
-                           Client
+    C <-->|"Socket I/O"| E
+    E <--> CS
+    E -->|"Complete HTTP Request"| Q
+    Q --> WA
+    Q --> WB
+    WA --> R
+    WB --> R
+    R --> N
+    N -->|"Wake Event Loop"| E
 ```
-
 ---
 
 ## Routing
@@ -67,22 +59,47 @@ Internally, the router stores something conceptually similar to:
 For every incoming request:
 
 ```text
-HTTP Request
-        │
-        ▼
+TCP Connection
+      |
+      v
+epoll_wait()
+      |
+      | EPOLLIN
+      v
+recv()
+      |
+      v
+Input Buffer
+      |
+      v
 HTTP Parser
-        │
-        ▼
-Router
-        │
-        ▼
-Find matching handler
-        │
-        ▼
-Execute handler
-        │
-        ▼
-Return Response
+      |
+      | Complete request?
+      v
+Task Queue
+      |
+      v
+Worker Thread
+      |
+      v
+Router -> Handler
+      |
+      v
+Completed Response Queue
+      |
+      v
+eventfd -> Wake Event Loop
+      |
+      v
+Output Buffer
+      |
+      | Socket writable
+      v
+send()
+      |
+      v
+Client
+
 ```
 
 ---
@@ -113,21 +130,7 @@ Client
 
 ---
 
-## Design Philosophy
 
-Each component has a single responsibility.
-
-| Component | Responsibility |
-|-----------|----------------|
-| TCP Connection | Accept client connections and transfer bytes |
-| HTTP Parser | Parse raw HTTP requests |
-| Router | Match `(Method, Path)` to a handler |
-| Handler | Execute application logic |
-| Response Writer | Serialize and send HTTP responses |
-
-The Router never performs business logic—it only resolves which handler should process the request.
-
----
 
 ## Goals
 

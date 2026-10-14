@@ -1,7 +1,6 @@
 #include <cstdio>
 #include <unistd.h>
 #include <sys/socket.h>
-#include <atomic>
 #include <csignal>
 #include "HttpServer.hpp"
 #include "application/http_response.hpp"
@@ -55,7 +54,6 @@ void HttpServer::run(int port){
     while (true) {
         int clientSocket = server.accept();
         
-        printf("Client Accept\n");
         if (clientSocket < 0){
             continue;
         }

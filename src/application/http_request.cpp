@@ -25,5 +25,10 @@ HttpRequest HttpRequest::parse(std::string_view data){
     request.path = std::string(data.substr(firstSpace + 1, secondSpace - firstSpace - 1));
     request.version = std::string(data.substr(secondSpace + 1, endLine - secondSpace - 1));
 
+    size_t bodyStart = data.find("\r\n\r\n");
+    if (bodyStart != std::string_view::npos) {
+        request.body = std::string(data.substr(bodyStart + 4));
+    }
+
     return request;
 }

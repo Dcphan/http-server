@@ -16,6 +16,7 @@ struct HttpRequest {
     Method method;
     std::string path;
     std::string version;
+    std::string body;
 
     static HttpRequest parse(std::string_view data);
 };
