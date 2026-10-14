@@ -1,11 +1,11 @@
 CXX = g++
-CXXFLAGS = -std=c++17 -Wall -Wextra -I./src
+CXXFLAGS = -std=c++17 -Wall -Wextra -I./include
 
 TARGET = server
 
 SRC = \
-	main.cpp \
-	src/HttpServer.cpp \
+	example/main.cpp \
+	src/server/HttpServer.cpp \
 	src/networking/socket.cpp \
 	src/application/http_request.cpp \
 	src/application/http_response.cpp \

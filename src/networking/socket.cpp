@@ -2,7 +2,7 @@
 #include <netinet/in.h>
 #include <stdio.h>
 #include "unistd.h"
-#include "socket.hpp"
+#include "networking/socket.hpp"
 
 void die(const char *message){
    fprintf(stderr, "Error: %s\n", message);  
