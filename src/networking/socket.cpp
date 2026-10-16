@@ -1,7 +1,7 @@
 #include <sys/socket.h>
 #include <netinet/in.h>
+#include <fcntl.h>
 #include <stdio.h>
-#include "unistd.h"
 #include "networking/socket.hpp"
 
 void die(const char *message){
@@ -36,14 +36,49 @@ void Socket::listen(int backlog){
     }
 }
 
-int Socket::accept(){
+int Socket::getFd(){
+    return this->fd;
+}
+
+Socket* Socket::accept(){
      struct sockaddr_in client_addr = {};
      socklen_t addr_len = sizeof(client_addr);
-     int clientSocket = ::accept(fd, (struct sockaddr*) &client_addr, &addr_len);
+     Socket* clientSocket;
+     clientSocket->fd = ::accept(fd, (struct sockaddr*) &client_addr, &addr_len);
      return clientSocket;
 }
 
- Socket::~Socket(){
-    close(fd);
-    printf("Socket Close\n");
+int Socket::setNonBlocking(){
+    int flag = fcntl(this->fd, F_GETFL, 0);
+
+    if (flag == -1){
+        perror("Error Getting Flag");
+        return -1;
+    }
+
+    if (fcntl(this->fd, F_SETFL, flag | O_NONBLOCK) < 0){
+        perror("Error Setting Flag as NonBlock");
+        return -1;
+    }
+    return 0;
+}
+
+socketState Socket::getState(){
+    return currentState;
+}
+
+void Socket::setState(socketState state) {
+    currentState = state;
+}
+
+void Socket::appendReadBuffer(const char* data, size_t length) {
+    readBuffer.append(data, length);
+}
+
+const std::string& Socket::getReadBuffer() const {
+    return readBuffer;
+}
+
+void Socket::clearReadBuffer() {
+    readBuffer.clear();
 }

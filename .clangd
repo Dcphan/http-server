@@ -1,0 +1,13 @@
+CompileFlags:
+  Add:
+    - -std=c++17
+---
+If:
+  PathMatch: '.*example.*'
+CompileFlags:
+  Add: -I../include
+---
+If:
+  PathMatch: '.*src.*'
+CompileFlags:
+  Add: -I../../include

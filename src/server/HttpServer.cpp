@@ -11,6 +11,7 @@ const int BUFFER_SIZE = 1024;
 
 HttpServer::HttpServer(){
     this->router = new Router();
+    this->fd2Socket;
 }
 
 void handleClient(int clientSocket, Router& router)
@@ -46,22 +47,24 @@ void handleClient(int clientSocket, Router& router)
 }
 
 void HttpServer::run(int port){
-    Socket server;
+    Socket* server;
 
-    server.bind(8080);
-    server.listen(MAX_CONNECTION);
+    server->bind(8080);
+    server->listen(MAX_CONNECTION);
 
     while (true) {
-        int clientSocket = server.accept();
+        Socket clientSocket = server->accept();
         
-        if (clientSocket < 0){
+        if (clientSocket.getFd() < 0){
             continue;
         }
+
+        // EPOLL
 
         // HANDLE CLIENT HERE
         char buffer[1024] = { 0 };
 
-        handleClient(clientSocket, *router);  
+        handleClient(clientSocket.getFd(), *router);  
     }
 }
 

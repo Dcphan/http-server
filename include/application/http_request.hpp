@@ -1,7 +1,6 @@
 #pragma once
 
-#include <cstring>
-#include <iostream>
+#include <string>
 #include <string_view>
 
 
@@ -19,6 +18,7 @@ struct HttpRequest {
     std::string body;
 
     static HttpRequest parse(std::string_view data);
+    static bool isComplete(std::string_view data);
 };
 
 
