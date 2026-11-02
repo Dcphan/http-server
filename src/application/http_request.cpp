@@ -32,3 +32,17 @@ HttpRequest HttpRequest::parse(std::string_view data){
 
     return request;
 }
+
+bool HttpRequest::isComplete(std::string_view data) {
+    size_t firstSpace = data.find(' ');
+    size_t secondSpace = data.find(' ', firstSpace + 1);
+    size_t endLine = data.find("\r\n");
+    size_t bodyStart = data.find("\r\n\r\n");
+
+    return firstSpace != std::string_view::npos &&
+           secondSpace != std::string_view::npos &&
+           endLine != std::string_view::npos &&
+           firstSpace < secondSpace &&
+           secondSpace < endLine &&
+           bodyStart != std::string_view::npos;
+}

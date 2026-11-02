@@ -1,6 +1,7 @@
 #pragma once
 #include "networking/socket.hpp"
 #include <sys/socket.h>
+#include <vector>
 #include "application/router.hpp"
 
 class HttpServer{
@@ -14,5 +15,5 @@ public:
 
 private:
     Router* router;
-
+    std::vector<Socket *> fd2Socket;
 };
