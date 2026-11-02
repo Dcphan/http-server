@@ -2,6 +2,7 @@
 #include <netinet/in.h>
 #include <fcntl.h>
 #include <stdio.h>
+#include <unistd.h>
 #include "networking/socket.hpp"
 
 void die(const char *message){
@@ -13,6 +14,16 @@ Socket::Socket(){
 
     if (fd < 0){
         die("Socket");
+    }
+}
+
+Socket::Socket(int fd) {
+    this->fd = fd;
+}
+
+Socket::~Socket(){
+    if (fd >= 0){
+        close(fd);
     }
 }
 
@@ -40,12 +51,10 @@ int Socket::getFd(){
     return this->fd;
 }
 
-Socket* Socket::accept(){
+std::unique_ptr<Socket> Socket::accept(){
      struct sockaddr_in client_addr = {};
      socklen_t addr_len = sizeof(client_addr);
-     Socket* clientSocket;
-     clientSocket->fd = ::accept(fd, (struct sockaddr*) &client_addr, &addr_len);
-     return clientSocket;
+     return std::make_unique<Socket>(::accept(fd, (struct sockaddr*) &client_addr, &addr_len));
 }
 
 int Socket::setNonBlocking(){
@@ -81,4 +90,32 @@ const std::string& Socket::getReadBuffer() const {
 
 void Socket::clearReadBuffer() {
     readBuffer.clear();
+}
+
+void Socket::appendWriteBuffer(const char* data, size_t length) {
+    writeBuffer.append(data, length);
+}
+
+const std::string& Socket::getWriteBuffer() const {
+    return writeBuffer;
+}
+
+void Socket::clearWriteBuffer() {
+    readBuffer.clear();
+}
+
+void Socket::setPollIndex(int index){
+    pollIndex = index;
+}
+
+int Socket::getPollIndex(){
+    return pollIndex;
+}
+
+void Socket::incrementOffset(size_t n){
+    writeOffset += n;
+}
+
+size_t Socket::getOffset(){
+    return writeOffset;
 }
